@@ -128,7 +128,95 @@ public class EmployeeRestController {
 
 }
 
+/*
+    burası REST Controller katmanı. Yani dış dünyadan (örn. Postman, frontend, mobil uygulama)
+    gelen HTTP isteklerini karşılıyor, doğru service metodunu çağırıp sonucu JSON olarak döndürüyor
 
+
+    @RestController
+    @RequestMapping("/api")
+    public class EmployeeRestController { ... }
+	•	@RestController: Sınıfın tüm metotlarının JSON döndürmesini sağlar (her metoda ayrıca
+	    @ResponseBody yazmana gerek yok).
+	•	@RequestMapping("/api"): Bu controller altındaki tüm endpoint’lerin başına /api prefix’i
+	     eklenir (örn. /api/employees).
+
+    --------------------------------
+
+    private final EmployeeService employeeService;
+    private final ObjectMapper objectMapper;
+
+    •	Service katmanı enjekte ediliyor. Controller iş kuralı yazmaz; sadece isteği yönlendirir.
+	•	ObjectMapper: PATCH için gelen kısmi güncellemeyi entity’ye birleştirmekte kullanılıyor.
+
+    --------------------------------
+    Endpoint’ler (CRUD + PATCH)
+
+    1) Tüm çalışanları getir
+
+    @GetMapping("/employees")
+    public List<Employee> findAll() {
+    return employeeService.findAll();
+    }
+    •	GET /api/employees
+	•	Tüm Employee kayıtlarını JSON listesi olarak döner.
+
+
+    2) Tek çalışan getir (ID ile)
+    @GetMapping("/employees/{employeeId}")
+    public Employee getEmployee(@PathVariable int employeeId) { ... }
+
+    •	GET /api/employees/{id}
+	•	Yol parametresi employeeId alınır, service.findById ile bulunur.
+	•	Bulunamazsa RuntimeException fırlatıyor (bunu aşağıda “İyileştirme” kısmında ele alacağım).
+
+    3) Yeni çalışan ekle
+    @PostMapping("/employees")
+    public Employee addEmployee(@RequestBody Employee theEmployee) {
+    theEmployee.setId(0);
+    return employeeService.save(theEmployee);
+}
+    	•	POST /api/employees
+	•	Body: Employee JSON’ı.
+	•	setId(0): Spring Data JPA save() metodu ID 0/ null ise insert, dolu ise update yapar. Burada
+	    “gelen JSON’da yanlışlıkla id varsa bile yeni kayıt olsun” diye ID sıfırlanıyor.
+	•	Not: Rest standartlarında genelde 201 Created ve Location header’ı dönmek güzel olur
+	       (aşağıda öneri var).
+
+    4) Varolan çalışanı güncelle (tam)
+
+    @PutMapping("/employees")
+    public Employee updateEmployee(@RequestBody Employee theEmployee) {
+    return employeeService.save(theEmployee);
+}
+    •	PUT /api/employees
+	•	Body: Tam Employee objesi (ID dolu olmalı).
+	•	save() ID doluysa update yapar.
+
+    5) Kısmi güncelleme (PATCH)
+    @PatchMapping("/employees/{employeeId}")
+    public Employee patchEmployee(@PathVariable int employeeId,
+                              @RequestBody Map<String, Object> patchPayload) { ... }
+
+	•	PATCH /api/employees/{id}
+	•	Body: Sadece değişecek alanlar (ör. {"firstName":"Ali"}).
+	•	Önce kayıt var mı kontrol ediliyor; sonra id alanı gövdede geldiyse reddediliyor
+	    (güvenlik/ bütünlük için doğru).
+	•	apply(...):
+	•	tempEmployee → ObjectNode’a çevrilir.
+	•	patchPayload → ObjectNode’a çevrilir.
+	•	employeeNode.setAll(patchNode) ile merge yapılır.
+	•	Tekrar Employee nesnesine dönüştürülür ve save() çağrılır.
+	•	Bu pratik bir merge yöntemi; ama tip/validasyon hatalarına dikkat (aşağıda öneriler).
+
+
+
+
+
+
+
+
+ */
 
 
 
