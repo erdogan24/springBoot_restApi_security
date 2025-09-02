@@ -30,7 +30,7 @@ public class DemoSecurityConfig {
 
         // define query to retrieve the quthorities/roles by username
         jdbcUserDetailsManager.setAuthoritiesByUsernameQuery(
-                "select user_id, roles from roles where user_id=?");
+                "select user_id, roles from role where user_id=?");
 
         return jdbcUserDetailsManager;
     }
